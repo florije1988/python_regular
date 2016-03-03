@@ -128,3 +128,5 @@ print res
 
 person = re.findall(ur"\[P\] (.+?) \[/P\]+?", "President [P] Barack Obama [/P] met Microsoft founder [P] Bill Gates [/P], yesterday.")
 print person
+
+res = re.match(r'.(?P<Fuck>.).(?p<$Fuck>).*')
