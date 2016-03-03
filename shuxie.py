@@ -18,28 +18,47 @@ headers = {
 }
 
 
-def get_web_content(url):
-    res = requests.get(url, headers=headers)
-    if res.status_code == 200:
-        return res.content  # .decode('GBK').encode('utf-8')  # 处理下比较好，暂时先这样。
-    else:
-        return ''
+def get_content(start_url):
+    """
+    所有开始的地方
+    """
+    next_url = start_url
+    has_next = True
+    while has_next:
+        res = requests.get(next_url, headers=headers)
+        if res.status_code == 200:
+            content = res.content  # .decode('GBK').encode('utf-8')
+        else:
+            content = ''
+        has_next, next_url = deal_page_content(content, start_url)
 
 
-def deal_content(content):
+def deal_page_content(content, start_url):
+    """
+    处理内容
+    """
     if content:
         soup = BeautifulSoup(content)
         # 首先获取分页。
+        pagination = soup.find('div', attrs={'class': 'page_turner'}).find_all('a')
+        has_next = True if re.search(r'\?page=\d+', pagination[-1].get('href')) else False
+        next_url = ''
+        if has_next:
+            next_url = pagination[-1].get('href')
         content_divs = soup.find_all('div', attrs={'style': 'background-color:#ddd;width:100%;'})
         for div in content_divs:
             img_url = '{base_url}{img_url}'.format(base_url=base_url, img_url=div.find('img', attrs={'class': 'scrollLoading rightimg'}).get('data-url'))
             print img_url
             save_img(img_url)
+        return has_next, '{home_url}{next_url}'.format(home_url=start_url, next_url=next_url)
     else:
-        return ''
+        return False, ''
 
 
 def save_img(img_url):
+    """
+    保存数据
+    """
     file_path = os.path.join(base_dir, re.search(r'\d{18}\.jpg', img_url).group())
     if not os.path.exists(file_path):
         response = requests.get(img_url, stream=True, headers=headers)
@@ -48,6 +67,4 @@ def save_img(img_url):
 
 if __name__ == '__main__':
     start_url = '{base_url}index.asp'.format(base_url=base_url)
-    content = get_web_content(start_url)
-    print content
-    deal_content(content)
+    get_content(start_url)
