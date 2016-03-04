@@ -6,7 +6,6 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-
 base_dir = 'shuxie'
 base_url = 'http://shouxieke.net/zile/'
 
@@ -49,7 +48,8 @@ def deal_page_content(content, start_url):
             next_url = pagination[-1].get('href')
         content_divs = soup.find_all('div', attrs={'style': 'background-color:#ddd;width:100%;'})
         for div in content_divs:
-            img_url = '{base_url}{img_url}'.format(base_url=base_url, img_url=div.find('img', attrs={'class': 'scrollLoading rightimg'}).get('data-url'))
+            img_url = '{base_url}{img_url}'.format(base_url=base_url, img_url=div.find('img', attrs={
+                'class': 'scrollLoading rightimg'}).get('data-url'))
             print img_url
             save_img(img_url)
         return has_next, '{home_url}{next_url}'.format(home_url=start_url, next_url=next_url)
@@ -66,6 +66,7 @@ def save_img(img_url):
         response = requests.get(img_url, stream=True, headers=headers)
         with open(file_path, "wb") as img:
             img.write(response.content)
+
 
 if __name__ == '__main__':
     start_url = '{base_url}index.asp'.format(base_url=base_url)
